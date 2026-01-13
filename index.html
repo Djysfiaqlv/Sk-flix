@@ -383,6 +383,258 @@
                 card.innerHTML = `
                     <div class="poster-container">
                         <img src="${movie.poster}" alt="${movie.title}" loading="lazy">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SK FLIX - Watch High Quality Movies</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. BASIC SETUP --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #121212; color: white; padding-bottom: 20px; }
+        
+        /* --- 2. HEADER & SEARCH --- */
+        header {
+            background: #000; padding: 15px 20px; position: sticky; top: 0; z-index: 100;
+            display: flex; flex-direction: column; gap: 10px; border-bottom: 2px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; color: #e50914; letter-spacing: 1px; }
+        .search-box {
+            width: 100%; background: #333; border: none; padding: 12px;
+            border-radius: 8px; color: white; font-size: 1rem; outline: none;
+        }
+
+        /* --- 3. CATEGORY BUTTONS --- */
+        .categories {
+            display: flex; gap: 10px; overflow-x: auto; padding: 10px 20px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .categories::-webkit-scrollbar { display: none; /* Chrome */ }
+        .cat-btn {
+            background: #222; color: #aaa; border: 1px solid #444;
+            padding: 8px 16px; border-radius: 20px; white-space: nowrap; font-size: 0.9rem;
+            cursor: pointer; transition: 0.3s;
+        }
+        .cat-btn.active { background: #e50914; color: white; border-color: #e50914; }
+
+        /* --- 4. MOVIE GRID --- */
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px; padding: 20px;
+        }
+        .movie-card { background: #1e1e1e; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
+        .movie-card:active { transform: scale(0.98); }
+        
+        .poster-container { position: relative; height: 220px; }
+        .poster-container img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* ⭐ NEW: Rating Badge */
+        .rating-badge {
+            position: absolute; top: 5px; left: 5px; 
+            background: rgba(0,0,0,0.8); color: #f1c40f; 
+            font-size: 0.75rem; font-weight: bold;
+            padding: 2px 6px; border-radius: 4px; 
+            border: 1px solid #f1c40f; z-index: 2;
+        }
+
+        .quality-badge {
+            position: absolute; top: 5px; right: 5px;
+            background: #e50914; color: white; font-size: 0.7rem;
+            padding: 2px 6px; border-radius: 4px; font-weight: bold;
+        }
+        .movie-info { padding: 10px; }
+        .movie-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-meta { font-size: 0.75rem; color: #888; margin-top: 4px; }
+
+        /* --- 5. DETAILS POPUP (MODAL) --- */
+        .details-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #121212; z-index: 1000; overflow-y: auto;
+        }
+        .back-btn {
+            position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6);
+            color: white; border: none; padding: 10px 15px; border-radius: 50%;
+            font-size: 1.2rem; cursor: pointer; z-index: 10;
+        }
+        .hero-poster { width: 100%; height: 350px; object-fit: cover; mask-image: linear-gradient(to bottom, black, transparent); }
+        .details-content { padding: 20px; margin-top: -60px; position: relative; }
+        
+        h1 { font-size: 1.8rem; margin-bottom: 5px; line-height: 1.2; }
+        .meta-tags { color: #aaa; font-size: 0.9rem; margin-bottom: 15px; }
+        
+        /* ▶️ NEW: Trailer Button */
+        .btn-trailer {
+            display: inline-block; background: transparent; color: white; border: 1px solid white;
+            padding: 8px 20px; border-radius: 30px; font-weight: 600; margin: 10px 0 15px 0;
+            text-decoration: none; font-size: 0.9rem;
+        }
+        .btn-trailer i { color: #ff0000; margin-right: 5px; }
+
+        p { color: #ccc; font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
+
+        .download-section h3 { border-left: 4px solid #e50914; padding-left: 10px; margin-bottom: 15px; }
+        .links-container { display: flex; flex-direction: column; gap: 10px; }
+        
+        .dl-btn {
+            padding: 14px; text-align: center; border-radius: 8px; 
+            text-decoration: none; color: white; font-weight: 600; display: block;
+        }
+
+        /* 🔴 WATCH & 🟢 DOWNLOAD BUTTON COLORS */
+        .btn-watch { 
+            background: linear-gradient(45deg, #ff0000, #cc0000); 
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4); border: none; 
+        }
+        .btn-download { 
+            background: linear-gradient(45deg, #2ecc71, #27ae60); 
+            color: black !important; font-weight: 800; 
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); border: none; 
+        }
+
+        /* Footer */
+        footer { text-align: center; padding: 30px; color: #555; font-size: 0.8rem; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">SK FLIX</div>
+        <input type="text" id="search" class="search-box" placeholder="Search movies..." onkeyup="filterMovies()">
+    </header>
+
+    <div class="categories">
+        <button class="cat-btn active" onclick="filterCategory('all', this)">All</button>
+        <button class="cat-btn" onclick="filterCategory('Anime', this)">Anime</button>
+        <button class="cat-btn" onclick="filterCategory('Bollywood', this)">Bollywood</button>
+        <button class="cat-btn" onclick="filterCategory('Hollywood', this)">Hollywood</button>
+        <button class="cat-btn" onclick="filterCategory('South', this)">South Dubbed</button>
+        <button class="cat-btn" style="background:#ffd700; color:black; border:none; font-weight:bold" onclick="filterCategory('4K', this)">⚡ 4K Pack</button>
+    </div>
+
+    <div class="grid" id="movieGrid"></div>
+
+    <div id="details-page" class="details-modal">
+        <button class="back-btn" onclick="closeDetails()"><i class="fa-solid fa-arrow-left"></i></button>
+        <img id="d-poster" class="hero-poster" src="">
+        
+        <div class="details-content">
+            <h1 id="d-title">Movie Title</h1>
+            <div class="meta-tags">
+                <span id="d-year">2024</span> • <span id="d-cat">Action</span> • 
+                <span style="color:#ffd700">IMDb: <span id="d-rating">0.0</span></span>
+            </div>
+
+            <a href="#" id="d-trailer" target="_blank" class="btn-trailer">
+                <i class="fa-brands fa-youtube"></i> Watch Trailer
+            </a>
+
+            <p id="d-desc">Movie description goes here...</p>
+
+            <div class="download-section">
+                <h3>Download & Watch</h3>
+                <div class="links-container" id="d-links">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Developed by Shoav Khan<br>
+        © 2026 SK FLIX
+    </footer>
+
+    <script>
+        // --- 1. MOVIE DATA (3 MOVIES ADDED) ---
+        const movies = [
+            {
+                title: "Your Name",
+                poster: "https://i.ibb.co/Kp2GbZVT/fd8e2429ed6d1edf34f8b926fe4ea3c2.jpg",
+                year: "2016",
+                category: "Anime",
+                quality: "1080p",
+                rating: "8.4",  // ⭐ IMDb
+                trailer: "https://www.youtube.com/watch?v=xU47nhruN-Q", // ▶️ Trailer
+                desc: "Two teenagers share a profound, magical connection upon discovering they are swapping bodies.",
+                links: {
+                    "▶️ Watch Online": "",  // 👈 Yahan Terabox link daalna baad me
+                    "⬇️ Download 720p": "https://gplinks.co/1DqtBBY",
+                    "⬇️ Download 1080p": "https://gplinks.co/1DqtBBY"
+                }
+            },
+            {
+                title: "Weathering With You",
+                poster: "https://upload.wikimedia.org/wikipedia/en/6/66/Weathering_with_You_Poster.jpg",
+                year: "2019",
+                category: "Anime",
+                quality: "1080p",
+                rating: "7.5",
+                trailer: "https://www.youtube.com/watch?v=Q6iK6DjV_iE",
+                desc: "Hodaka runs away to Tokyo and befriends Hina, a girl who can manipulate the weather.",
+                links: {
+                    "▶️ Watch Online": "", // 👈 Yahan Terabox link daalna
+                    "⬇️ Download 480p": "https://gplinks.co/1DqtBBY",
+                    "⬇️ Download 1080p": "https://gplinks.co/1DqtBBY"
+                }
+            },
+            {
+                title: "Crayon Shin-chan: Super Hot! The Spicy Kasukabe",
+                poster: "https://i.ibb.co/xqbpzxs2/5969f07b0f1252e90fedf97e4c8e079e.jpg",
+                year: "2025",
+                category: "Anime",
+                quality: "1080p",
+                rating: "7.1",
+                trailer: "https://www.youtube.com/results?search_query=shin+chan+movie+2025+trailer",
+                desc: "Shin-chan and his friends travel to a spicy dance festival where mysterious things happen.",
+                links: {
+                    "▶️ Watch Online": "", // 👈 Yahan Terabox link daalna
+                    "⬇️ Download 720p": "https://gplinks.co/QucvQeF",
+                    "⬇️ Download 1080p": "https://gplinks.co/QucvQeF"
+                }
+            }
+        ];
+
+        // --- 2. SETUP VARIABLES ---
+        const grid = document.getElementById('movieGrid');
+        const detailsPage = document.getElementById('details-page');
+        const searchInput = document.getElementById('search');
+
+        // --- 3. RENDER MOVIES (Screen par dikhana) ---
+        function renderMovies(filter = 'all') {
+            grid.innerHTML = "";
+            let data = [...movies].reverse(); // Newest first
+
+            if (filter !== 'all') {
+                if (filter === '4K') {
+                    data = data.filter(m => m.quality.includes('4K'));
+                } else {
+                    data = data.filter(m => m.category === filter);
+                }
+            }
+
+            // Search Filter
+            const term = searchInput.value.toLowerCase();
+            if(term) {
+                data = data.filter(m => m.title.toLowerCase().includes(term));
+            }
+
+            if(data.length === 0) {
+                grid.innerHTML = "<p style='color:#888; grid-column:1/-1; text-align:center;'>No movies found.</p>";
+                return;
+            }
+
+            data.forEach(movie => {
+                const card = document.createElement('div');
+                card.classList.add('movie-card');
+                card.onclick = () => openDetails(movie);
+                card.innerHTML = `
+                    <div class="poster-container">
+                        <img src="${movie.poster}" loading="lazy">
+                        <div class="rating-badge"><i class="fa-solid fa-star"></i> ${movie.rating}</div>
                         <span class="quality-badge">${movie.quality}</span>
                     </div>
                     <div class="movie-info">
@@ -394,79 +646,86 @@
             });
         }
 
-        // 4. SEARCH FUNCTION
-        document.getElementById('searchBar').addEventListener('keyup', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = movies.filter(m => m.title.toLowerCase().includes(term));
-            
-            grid.innerHTML = "";
-            filtered.forEach(movie => {
-                // Simplified render for search
-                const card = document.createElement('div');
-                card.classList.add('movie-card');
-                card.onclick = () => openDetails(movie);
-                card.innerHTML = `
-                     <div class="poster-container"><img src="${movie.poster}"><span class="quality-badge">${movie.quality}</span></div>
-                     <div class="movie-info"><div class="movie-title">${movie.title}</div></div>
-                `;
-                grid.appendChild(card);
-            });
-        });
-
-        // 5. DETAILS OPEN/CLOSE LOGIC (With Back Button Fix)
+        // --- 4. OPEN DETAILS (Jab movie click ho) ---
         function openDetails(movie) {
-            // Data bharna
             document.getElementById('d-poster').src = movie.poster;
             document.getElementById('d-title').innerText = movie.title;
             document.getElementById('d-year').innerText = movie.year;
             document.getElementById('d-cat').innerText = movie.category;
+            document.getElementById('d-rating').innerText = movie.rating; // Set Rating
             document.getElementById('d-desc').innerText = movie.desc;
             
+            // Trailer Logic
+            const trailerBtn = document.getElementById('d-trailer');
+            if(movie.trailer) {
+                trailerBtn.href = movie.trailer;
+                trailerBtn.style.display = "inline-block";
+            } else {
+                trailerBtn.style.display = "none";
+            }
+
+            // Buttons Logic (Red/Green)
             const linkBox = document.getElementById('d-links');
             linkBox.innerHTML = "";
             
-            // Buttons create karna
             for (const [key, url] of Object.entries(movie.links)) {
+                // Skip empty watch links if you don't want to show them yet
+                // if(url === "") continue; 
+
                 const a = document.createElement('a');
-                a.className = 'dl-btn';
-                a.href = url;
+                a.href = url === "" ? "#" : url; // Empty link protection
                 a.target = "_blank";
-                a.innerHTML = `<i class="fa-solid fa-download"></i> ${key}`;
+                
+                // Color & Icon Logic
+                if(key.includes("Watch")) {
+                    a.className = 'dl-btn btn-watch';
+                    a.innerHTML = `<i class="fa-solid fa-play"></i> ${key}`;
+                    if(url === "") a.onclick = (e) => { e.preventDefault(); alert("Coming Soon!"); } // Alert if empty
+                } else {
+                    a.className = 'dl-btn btn-download';
+                    a.innerHTML = `<i class="fa-solid fa-download"></i> ${key}`;
+                }
+                
                 linkBox.appendChild(a);
             }
 
-            // Page Show karna
             detailsPage.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Scroll lock
-
-            // Browser History me nakli page add karna
+            document.body.style.overflow = 'hidden';
+            
+            // Back button support for mobile
             window.history.pushState({ modalOpen: true }, "", "#details");
         }
 
-        function goBack() {
-            // Browser ke back function jaisa behave kare
-            window.history.back();
+        // --- 5. CLOSE DETAILS ---
+        function closeDetails() {
+            detailsPage.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            history.back();
         }
 
-        // System Back Button Listener
-        window.addEventListener('popstate', function (event) {
-            if (detailsPage.style.display === 'block') {
-                detailsPage.style.display = 'none';
-                document.body.style.overflow = 'auto'; // Scroll unlock
-            }
-        });
+        // Handle Back Button
+        window.onpopstate = function() {
+            detailsPage.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
 
-        // Button Click Active Effect
-        const chips = document.querySelectorAll('.chip');
-        chips.forEach(btn => {
-            btn.addEventListener('click', function() {
-                chips.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
+        // --- 6. CATEGORY FILTER ---
+        function filterCategory(cat, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMovies(cat);
+        }
 
-        // First Run
-        renderMovies('all');
+        // Search Function
+        function filterMovies() {
+            const activeBtn = document.querySelector('.cat-btn.active');
+            // Re-run render with current category context
+            // Note: simple version just resets to 'all' or keeps current list logic
+            renderMovies('all'); 
+        }
+
+        // Start App
+        renderMovies();
 
     </script>
 </body>
