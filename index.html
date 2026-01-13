@@ -258,7 +258,7 @@
         // --- 3. RENDER FUNCTION ---
         function renderMovies() {
             grid.innerHTML = "";
-            let data = movies.slice().reverse();
+            let data = movies.slice();
 
             // Filter Category
             if (currentCategory !== 'all') {
