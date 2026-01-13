@@ -2,391 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SK Flix - Download HD Movies</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        /* 🔹 1. GLOBAL SETTINGS & COLORS */
-        :root {
-            --bg-color: #121212;         /* Dark Background */
-            --card-bg: #1c1c1c;          /* Movie Card Color */
-            --text-color: #ffffff;       /* White Text */
-            --accent-red: #ff3b3f;       /* SK Red Color */
-            --accent-green: #2ecc71;     /* Notification Green */
-            --accent-blue: #3498db;      /* Telegram Blue */
-            --accent-yellow: #f1c40f;    /* 4K/Gold Color */
-            --insta-pink: #E1306C;       /* Instagram Color */
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 60px; -webkit-tap-highlight-color: transparent; }
-        a { text-decoration: none; color: inherit; }
-
-        /* 🔹 2. HEADER SECTION */
-        header {
-            background-color: #181818;
-            padding: 15px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid #333;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-
-        /* SK FLIX Logo Styling */
-        .logo { 
-            font-size: 2rem; 
-            font-weight: 800; 
-            color: white; 
-            letter-spacing: 1px; 
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        .logo span { color: var(--accent-red); } /* "SK" Red color me */
-
-        /* Search Bar */
-        .search-container input {
-            width: 100%; max-width: 600px; padding: 12px 20px;
-            border-radius: 50px; border: 1px solid #444; background: #222; color: white; outline: none;
-            transition: 0.3s;
-        }
-        .search-container input:focus { border-color: var(--accent-red); background: #2a2a2a; }
-
-        /* 🔹 3. NOTIFICATION ALERT */
-        .alert-box {
-            background: var(--accent-green);
-            color: #000;
-            font-weight: bold;
-            text-align: center;
-            padding: 10px;
-            font-size: 0.9rem;
-            margin: 10px 15px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .close-alert { cursor: pointer; font-size: 1.2rem; padding: 0 10px; }
-
-        /* 🔹 4. CATEGORIES & SOCIAL BUTTONS */
-        .tags-wrapper { padding: 0 15px; margin-bottom: 20px; text-align: center; }
-
-        /* Social Buttons Container */
-        .social-box {
-            display: flex; gap: 10px; justify-content: center; max-width: 500px; margin: 0 auto 15px auto;
-        }
-        
-        .btn-social {
-            flex: 1; padding: 10px; border-radius: 5px; color: white; font-weight: bold;
-            text-align: center; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .btn-tg { background: var(--accent-blue); }
-        .btn-ig { background: var(--insta-pink); }
-
-        /* Filter Chips (Categories) */
-        .chip-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
-
-        .chip {
-            background: transparent; border: 1px solid #555; color: #ddd;
-            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
-            cursor: pointer; transition: 0.3s;
-        }
-        .chip:hover, .chip.active { background: white; color: black; border-color: white; transform: scale(1.05); }
-        
-        /* Special Colors for specific chips */
-        .chip-red { background: var(--accent-red); border: none; color: white; font-weight: bold; }
-        .chip-yellow { background: var(--accent-yellow); border: none; color: black; font-weight: bold; }
-
-        /* 🔹 5. MOVIE GRID SYSTEM */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 10px; }
-        
-        .movie-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); /* Mobile: 2 Columns */
-            gap: 12px; 
-        }
-        
-        /* Desktop: 5-6 Columns */
-        @media (min-width: 768px) {
-            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        }
-
-        .movie-card {
-            background: var(--card-bg); border-radius: 8px; overflow: hidden;
-            position: relative; cursor: pointer; transition: transform 0.2s; border: 1px solid #333;
-        }
-        .movie-card:hover { transform: translateY(-5px); border-color: var(--accent-red); }
-
-        /* Poster Image Fit */
-        .poster-container { width: 100%; aspect-ratio: 2/3; position: relative; }
-        .poster-container img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Quality Badge (e.g. 4K) */
-        .quality-badge {
-            position: absolute; top: 5px; right: 5px; background: var(--accent-yellow);
-            color: black; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 3px;
-        }
-
-        .movie-info { padding: 10px; text-align: center; }
-        .movie-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .movie-meta { font-size: 0.75rem; color: #888; margin-top: 3px; }
-
-        /* 🔹 6. DETAILS PAGE (POPUP) */
-        #details-page {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0f0f0f; z-index: 200; overflow-y: auto;
-            display: none; padding: 20px;
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .details-content { max-width: 700px; margin: 20px auto; text-align: center; }
-        .d-poster-img { width: 220px; border-radius: 10px; box-shadow: 0 0 25px rgba(255, 59, 63, 0.2); }
-        
-        .dl-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 25px; }
-        
-        /* Download Buttons */
-        .dl-btn {
-            background: #222; border: 1px solid #444; padding: 12px 25px; color: white;
-            border-radius: 5px; min-width: 140px; text-align: center; cursor: pointer; transition: 0.3s;
-        }
-        .dl-btn:hover { background: var(--accent-green); color: black; border-color: var(--accent-green); }
-        .dl-btn i { margin-right: 5px; }
-
-        /* Back Button on Details Page */
-        .close-btn-float { position: absolute; top: 20px; right: 20px; font-size: 2rem; cursor: pointer; color: #888; }
-        .btn-back-main { padding: 10px 40px; background: #333; color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; }
-
-        /* Footer */
-        footer { margin-top: 50px; padding: 20px; text-align: center; color: #666; font-size: 0.8rem; border-top: 1px solid #222; }
-
-    </style>
-</head>
-<body>
-
-    <header>
-        <div class="logo">
-            <span>SK</span> FLIX
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchBar" placeholder="Search Movies, Web Series...">
-        </div>
-    </header>
-
-    <div class="alert-box" id="alertBox">
-        <span><i class="fa-solid fa-bullhorn"></i> Welcome to SK Flix! Join our Telegram for updates.</span>
-        <span class="close-alert" onclick="document.getElementById('alertBox').style.display='none'">&times;</span>
-    </div>
-
-    <div class="tags-wrapper">
-        
-        <div class="social-box">
-            <a href="https://t.me/+Kqduway3ffthMTY1" target="_blank" class="btn-social btn-tg">
-                <i class="fa-brands fa-telegram"></i> Telegram
-            </a>
-            <a href="https://www.instagram.com/shoav_khan_00" target="_blank" class="btn-social btn-ig">
-                <i class="fa-brands fa-instagram"></i> Instagram
-            </a>
-        </div>
-
-        <div class="chip-container">
-            <button class="chip chip-red" onclick="filterMovies('all')">All Movies</button>
-            <button class="chip" onclick="filterMovies('Bollywood')">Bollywood</button>
-            <button class="chip" onclick="filterMovies('South')">South Dubbed</button>
-            <button class="chip" onclick="filterMovies('Hollywood')">Hollywood</button>
-            <button class="chip" onclick="filterMovies('Web Series')">Web Series</button>
-            <button class="chip" onclick="filterMovies('Anime')">Anime</button>
-            <button class="chip chip-yellow" onclick="filterMovies('4K')">⚡ 4K Pack</button>
-        </div>
-    </div>
-
-    <main class="container">
-        <div id="movieGrid" class="movie-grid">
-            </div>
-    </main>
-
-    <footer>
-        <p>Designed by SK Flix &copy; 2024</p>
-    </footer>
-
-    <div id="details-page">
-        <span class="close-btn-float" onclick="goBack()">&times;</span>
-        
-        <div class="details-content">
-            <img src="" id="d-poster" class="d-poster-img">
-            <h1 id="d-title" style="margin: 15px 0; color: var(--accent-red); font-size: 1.8rem;">Title</h1>
-            
-            <div style="color: #888; margin-bottom: 15px; font-size: 0.9rem;">
-                <span id="d-year">2023</span> • <span id="d-cat">Category</span>
-            </div>
-
-            <p id="d-desc" style="color:#ccc; font-size:0.95rem; line-height: 1.6; margin-bottom:25px; text-align: justify;">
-                Description here...
-            </p>
-            
-            <h3 style="color: white; border-bottom: 2px solid var(--accent-red); display: inline-block; margin-bottom: 15px;">
-                Download Links
-            </h3>
-            
-            <div id="d-links" class="dl-grid">
-                </div>
-
-            <br><br><br>
-            <button onclick="goBack()" class="btn-back-main">
-                <i class="fa-solid fa-arrow-left"></i> Go Back
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // 1. MOVIE DATA (Yahan apni movies add karein)
-        const movies = [
-    {
-        title: "Weathering With You",
-        poster: "https://upload.wikimedia.org/wikipedia/en/6/66/Weathering_with_You_Poster.jpg",
-        year: "2019",
-        category: "Anime",
-        quality: "1080p",
-        desc: "Hodaka runs away to Tokyo and befriends Hina, a girl who can manipulate the weather. As endless rain covers the city, they must choose between love and nature.",
-        links: {
-            "480p": "https://gplinks.co/1DqtBBY",
-            "720p": "https://gplinks.co/1DqtBBY",
-            "1080p": "https://gplinks.co/1DqtBBY"
-        }
-    },
-        
-            {
-                title: "Animal",
-                poster: "https://upload.wikimedia.org/wikipedia/en/9/90/Animal_%282023_film%29_poster.jpg",
-                year: "2023",
-                category: "Bollywood",
-                quality: "4K HDR",
-                desc: "A son's obsessive love for his father leads him down a dark path of crime and vengeance.",
-                links: { "480p (400MB)": "#", "720p (1.2GB)": "#", "1080p (3GB)": "#" }
-            },
-            {
-                title: "12th Fail",
-                poster: "https://upload.wikimedia.org/wikipedia/en/f/f2/12th_Fail_poster.jpeg",
-                year: "2023",
-                category: "Bollywood",
-                quality: "1080p",
-                desc: "The real-life story of IPS Officer Manoj Kumar Sharma and his struggle to pass the UPSC exam.",
-                links: { "720p": "#", "1080p": "#" }
-            },
-            {
-                title: "KGF Chapter 2",
-                poster: "https://upload.wikimedia.org/wikipedia/en/d/d0/K.G.F_Chapter_2.jpg",
-                year: "2022",
-                category: "South",
-                quality: "Dual Audio",
-                desc: "Rocky must defend his supremacy against Adheera and Prime Minister Ramika Sen.",
-                links: { "720p Hindi": "#", "1080p Hindi": "#" }
-            },
-            {
-                title: "Stranger Things S4",
-                poster: "https://resizing.flixster.com/0xxuABVAGB-J9F_iF87c80X3gK0=/ems.cHJkLWVtcy1hc3NldHMvdHZzZWFzb24vNzUyMTFhOTktZTU4Ni00ODc3LWJkZWYtMTI5YzgwMDI4NzU4LmpwZw==",
-                year: "2022",
-                category: "Web Series",
-                quality: "4K",
-                desc: "Darkness returns to Hawkins in the form of Vecna.",
-                links: { "Season 4 Zip": "#" }
-            },
-            {
-                title: "Avengers: Endgame",
-                poster: "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg",
-                year: "2019",
-                category: "Hollywood",
-                quality: "4K IMAX",
-                desc: "The Avengers assemble once more to reverse Thanos' actions.",
-                links: { "1080p": "#", "4K": "#" }
-            },
-            {
-                title: "Jawan",
-                poster: "https://upload.wikimedia.org/wikipedia/en/3/39/Jawan_film_poster.jpg",
-                year: "2023",
-                category: "Bollywood",
-                quality: "1080p",
-                desc: "A high-octane action thriller.",
-                links: { "Download": "#" }
-            },
-            {
-        title: "Your Name",
-        poster: "https://i.ibb.co/Kp2GbZVT/fd8e2429ed6d1edf34f8b926fe4ea3c2.jpg",
-        year: "2016",
-        category: "Anime",
-        quality: "1080p",
-        desc: "Two teenagers share a profound, magical connection upon discovering they are swapping bodies.",
-        links: {
-            "720p": "https://gplinks.co/1DqtBBY",
-            "1080p": "https://gplinks.co/1DqtBBY"
-        }
-    },
-          {
-        title: "Weathering With You",
-        poster: "https://upload.wikimedia.org/wikipedia/en/6/66/Weathering_with_You_Poster.jpg",
-        year: "2019",
-        category: "Anime",
-        quality: "1080p",
-        desc: "Hodaka runs away to Tokyo and befriends Hina, a girl who can manipulate the weather. As endless rain covers the city, they must choose between love and nature.",
-        links: {
-            "480p": "https://gplinks.co/1DqtBBY",
-            "720p": "https://gplinks.co/1DqtBBY",
-            "1080p": "https://gplinks.co/1DqtBBY"
-        }
-    },  
-                {
-        title: "Crayon Shin-chan the Movie: Super Hot! The Spicy Kasukabe Dancers",
-        poster: "https://i.ibb.co/xqb1zxs2/5969f07b0f1252e90fedf97e4c8e079e.jpg",
-        year: "2025",
-        category: "Anime",
-        quality: "1080p",
-        desc: "Shin-chan and his friends travel to a spicy dance festival where they accidentally get involved in stopping an evil plan using their fun, friendship, and courage.",
-        links: {
-            "720p": "https://gplinks.co/QucvQeF",
-            "1080p": "https://gplinks.co/QucvQeF"
-        }
-    },
-            
-        ];
-
-        // 2. SETUP VARIABLES
-        const grid = document.getElementById('movieGrid');
-        const detailsPage = document.getElementById('details-page');
-
-        // 3. RENDER MOVIES (Grid Banana)
-        function renderMovies(filter = 'all') {
-            grid.innerHTML = "";
-            let data = [...movies].reverse(); // Newest first
-
-            // Filter Logic
-            if (filter !== 'all') {
-                if (filter === '4K') {
-                    data = data.filter(m => m.quality.includes('4K'));
-                } else {
-                    data = data.filter(m => m.category === filter);
-                }
-            }
-
-            if(data.length === 0) {
-                grid.innerHTML = "<p style='color:#888; grid-column:1/-1; text-align:center; padding:20px;'>No movies found in this category.</p>";
-                return;
-            }
-
-            data.forEach(movie => {
-                const card = document.createElement('div');
-                card.classList.add('movie-card');
-                card.onclick = () => openDetails(movie); // Card click par detail open
-
-                card.innerHTML = `
-                    <div class="poster-container">
-                        <img src="${movie.poster}" alt="${movie.title}" loading="lazy">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SK FLIX - Watch High Quality Movies</title>
     
@@ -394,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. BASIC SETUP --- */
+        /* --- CSS STYLES --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: #121212; color: white; padding-bottom: 20px; }
         
-        /* --- 2. HEADER & SEARCH --- */
+        /* HEADER */
         header {
             background: #000; padding: 15px 20px; position: sticky; top: 0; z-index: 100;
             display: flex; flex-direction: column; gap: 10px; border-bottom: 2px solid #333;
@@ -409,12 +24,12 @@
             border-radius: 8px; color: white; font-size: 1rem; outline: none;
         }
 
-        /* --- 3. CATEGORY BUTTONS --- */
+        /* CATEGORIES */
         .categories {
             display: flex; gap: 10px; overflow-x: auto; padding: 10px 20px;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
-        .categories::-webkit-scrollbar { display: none; /* Chrome */ }
+        .categories::-webkit-scrollbar { display: none; }
         .cat-btn {
             background: #222; color: #aaa; border: 1px solid #444;
             padding: 8px 16px; border-radius: 20px; white-space: nowrap; font-size: 0.9rem;
@@ -422,7 +37,7 @@
         }
         .cat-btn.active { background: #e50914; color: white; border-color: #e50914; }
 
-        /* --- 4. MOVIE GRID --- */
+        /* MOVIE GRID */
         .grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 15px; padding: 20px;
@@ -433,7 +48,7 @@
         .poster-container { position: relative; height: 220px; }
         .poster-container img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* ⭐ NEW: Rating Badge */
+        /* BADGES */
         .rating-badge {
             position: absolute; top: 5px; left: 5px; 
             background: rgba(0,0,0,0.8); color: #f1c40f; 
@@ -441,17 +56,17 @@
             padding: 2px 6px; border-radius: 4px; 
             border: 1px solid #f1c40f; z-index: 2;
         }
-
         .quality-badge {
             position: absolute; top: 5px; right: 5px;
             background: #e50914; color: white; font-size: 0.7rem;
             padding: 2px 6px; border-radius: 4px; font-weight: bold;
         }
+
         .movie-info { padding: 10px; }
         .movie-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .movie-meta { font-size: 0.75rem; color: #888; margin-top: 4px; }
 
-        /* --- 5. DETAILS POPUP (MODAL) --- */
+        /* DETAILS MODAL */
         .details-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #121212; z-index: 1000; overflow-y: auto;
@@ -467,36 +82,19 @@
         h1 { font-size: 1.8rem; margin-bottom: 5px; line-height: 1.2; }
         .meta-tags { color: #aaa; font-size: 0.9rem; margin-bottom: 15px; }
         
-        /* ▶️ NEW: Trailer Button */
+        /* BUTTONS STYLES */
         .btn-trailer {
             display: inline-block; background: transparent; color: white; border: 1px solid white;
             padding: 8px 20px; border-radius: 30px; font-weight: 600; margin: 10px 0 15px 0;
             text-decoration: none; font-size: 0.9rem;
         }
-        .btn-trailer i { color: #ff0000; margin-right: 5px; }
-
-        p { color: #ccc; font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
-
-        .download-section h3 { border-left: 4px solid #e50914; padding-left: 10px; margin-bottom: 15px; }
-        .links-container { display: flex; flex-direction: column; gap: 10px; }
-        
         .dl-btn {
             padding: 14px; text-align: center; border-radius: 8px; 
-            text-decoration: none; color: white; font-weight: 600; display: block;
+            text-decoration: none; color: white; font-weight: 600; display: block; margin-top: 10px;
         }
+        .btn-watch { background: linear-gradient(45deg, #ff0000, #cc0000); border: none; }
+        .btn-download { background: linear-gradient(45deg, #2ecc71, #27ae60); color: black !important; font-weight: 800; border: none; }
 
-        /* 🔴 WATCH & 🟢 DOWNLOAD BUTTON COLORS */
-        .btn-watch { 
-            background: linear-gradient(45deg, #ff0000, #cc0000); 
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4); border: none; 
-        }
-        .btn-download { 
-            background: linear-gradient(45deg, #2ecc71, #27ae60); 
-            color: black !important; font-weight: 800; 
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); border: none; 
-        }
-
-        /* Footer */
         footer { text-align: center; padding: 30px; color: #555; font-size: 0.8rem; margin-top: 20px; }
     </style>
 </head>
@@ -504,7 +102,7 @@
 
     <header>
         <div class="logo">SK FLIX</div>
-        <input type="text" id="search" class="search-box" placeholder="Search movies..." onkeyup="filterMovies()">
+        <input type="text" id="search" class="search-box" placeholder="Search movies..." onkeyup="renderMovies()">
     </header>
 
     <div class="categories">
@@ -512,8 +110,8 @@
         <button class="cat-btn" onclick="filterCategory('Anime', this)">Anime</button>
         <button class="cat-btn" onclick="filterCategory('Bollywood', this)">Bollywood</button>
         <button class="cat-btn" onclick="filterCategory('Hollywood', this)">Hollywood</button>
-        <button class="cat-btn" onclick="filterCategory('South', this)">South Dubbed</button>
-        <button class="cat-btn" style="background:#ffd700; color:black; border:none; font-weight:bold" onclick="filterCategory('4K', this)">⚡ 4K Pack</button>
+        <button class="cat-btn" onclick="filterCategory('South', this)">South</button>
+        <button class="cat-btn" style="background:#ffd700; color:black; border:none; font-weight:bold" onclick="filterCategory('4K', this)">⚡ 4K</button>
     </div>
 
     <div class="grid" id="movieGrid"></div>
@@ -533,23 +131,19 @@
                 <i class="fa-brands fa-youtube"></i> Watch Trailer
             </a>
 
-            <p id="d-desc">Movie description goes here...</p>
+            <p id="d-desc" style="color:#ccc; line-height:1.5;">Description here...</p>
 
-            <div class="download-section">
-                <h3>Download & Watch</h3>
-                <div class="links-container" id="d-links">
-                    </div>
-            </div>
+            <div id="d-links"></div>
         </div>
     </div>
 
-    <footer>
-        Developed by Shoav Khan<br>
-        © 2026 SK FLIX
-    </footer>
+    <footer>Developed by Shoav Khan © 2026</footer>
 
     <script>
-        // --- 1. MOVIE DATA (3 MOVIES ADDED) ---
+        // --- 1. GLOBAL VARIABLE (Category track karne ke liye) ---
+        let currentCategory = 'all'; 
+
+        // --- 2. MOVIE DATA ---
         const movies = [
             {
                 title: "Your Name",
@@ -557,11 +151,11 @@
                 year: "2016",
                 category: "Anime",
                 quality: "1080p",
-                rating: "8.4",  // ⭐ IMDb
-                trailer: "https://www.youtube.com/watch?v=xU47nhruN-Q", // ▶️ Trailer
+                rating: "8.4",
+                trailer: "https://www.youtube.com/watch?v=xU47nhruN-Q",
                 desc: "Two teenagers share a profound, magical connection upon discovering they are swapping bodies.",
                 links: {
-                    "▶️ Watch Online": "",  // 👈 Yahan Terabox link daalna baad me
+                    "▶️ Watch Online": "", 
                     "⬇️ Download 720p": "https://gplinks.co/1DqtBBY",
                     "⬇️ Download 1080p": "https://gplinks.co/1DqtBBY"
                 }
@@ -576,7 +170,7 @@
                 trailer: "https://www.youtube.com/watch?v=Q6iK6DjV_iE",
                 desc: "Hodaka runs away to Tokyo and befriends Hina, a girl who can manipulate the weather.",
                 links: {
-                    "▶️ Watch Online": "", // 👈 Yahan Terabox link daalna
+                    "▶️ Watch Online": "",
                     "⬇️ Download 480p": "https://gplinks.co/1DqtBBY",
                     "⬇️ Download 1080p": "https://gplinks.co/1DqtBBY"
                 }
@@ -591,39 +185,42 @@
                 trailer: "https://www.youtube.com/results?search_query=shin+chan+movie+2025+trailer",
                 desc: "Shin-chan and his friends travel to a spicy dance festival where mysterious things happen.",
                 links: {
-                    "▶️ Watch Online": "", // 👈 Yahan Terabox link daalna
+                    "▶️ Watch Online": "",
                     "⬇️ Download 720p": "https://gplinks.co/QucvQeF",
                     "⬇️ Download 1080p": "https://gplinks.co/QucvQeF"
                 }
             }
         ];
 
-        // --- 2. SETUP VARIABLES ---
+        // --- 3. SETUP ---
         const grid = document.getElementById('movieGrid');
         const detailsPage = document.getElementById('details-page');
         const searchInput = document.getElementById('search');
 
-        // --- 3. RENDER MOVIES (Screen par dikhana) ---
-        function renderMovies(filter = 'all') {
+        // --- 4. NEW RENDER FUNCTION (Category + Search Fix) ---
+        function renderMovies() {
             grid.innerHTML = "";
-            let data = [...movies].reverse(); // Newest first
+            let data = [...movies].reverse();
 
-            if (filter !== 'all') {
-                if (filter === '4K') {
+            // Step 1: Filter by Category
+            if (currentCategory !== 'all') {
+                if (currentCategory === '4K') {
                     data = data.filter(m => m.quality.includes('4K'));
                 } else {
-                    data = data.filter(m => m.category === filter);
+                    // Yahan check hoga ki movie.category button se match karti hai ya nahi
+                    data = data.filter(m => m.category === currentCategory);
                 }
             }
 
-            // Search Filter
+            // Step 2: Filter by Search (Isse category reset nahi hogi)
             const term = searchInput.value.toLowerCase();
             if(term) {
                 data = data.filter(m => m.title.toLowerCase().includes(term));
             }
 
+            // Step 3: Show Result
             if(data.length === 0) {
-                grid.innerHTML = "<p style='color:#888; grid-column:1/-1; text-align:center;'>No movies found.</p>";
+                grid.innerHTML = "<p style='color:#888; grid-column:1/-1; text-align:center; padding:20px;'>No movies found in " + currentCategory + "</p>";
                 return;
             }
 
@@ -646,16 +243,31 @@
             });
         }
 
-        // --- 4. OPEN DETAILS (Jab movie click ho) ---
+        // --- 5. CATEGORY CLICK HANDLER ---
+        function filterCategory(cat, btn) {
+            // Update Global Variable
+            currentCategory = cat;
+            
+            // Buttons Design Change
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Reset Search Box (Optional, agar aap chahein toh hata sakte hain)
+            searchInput.value = "";
+            
+            // Re-render
+            renderMovies();
+        }
+
+        // --- 6. DETAILS MODAL FUNCTIONS ---
         function openDetails(movie) {
             document.getElementById('d-poster').src = movie.poster;
             document.getElementById('d-title').innerText = movie.title;
             document.getElementById('d-year').innerText = movie.year;
             document.getElementById('d-cat').innerText = movie.category;
-            document.getElementById('d-rating').innerText = movie.rating; // Set Rating
+            document.getElementById('d-rating').innerText = movie.rating;
             document.getElementById('d-desc').innerText = movie.desc;
             
-            // Trailer Logic
             const trailerBtn = document.getElementById('d-trailer');
             if(movie.trailer) {
                 trailerBtn.href = movie.trailer;
@@ -664,69 +276,43 @@
                 trailerBtn.style.display = "none";
             }
 
-            // Buttons Logic (Red/Green)
             const linkBox = document.getElementById('d-links');
             linkBox.innerHTML = "";
             
             for (const [key, url] of Object.entries(movie.links)) {
-                // Skip empty watch links if you don't want to show them yet
-                // if(url === "") continue; 
-
                 const a = document.createElement('a');
-                a.href = url === "" ? "#" : url; // Empty link protection
+                a.href = url === "" ? "#" : url;
                 a.target = "_blank";
                 
-                // Color & Icon Logic
                 if(key.includes("Watch")) {
                     a.className = 'dl-btn btn-watch';
                     a.innerHTML = `<i class="fa-solid fa-play"></i> ${key}`;
-                    if(url === "") a.onclick = (e) => { e.preventDefault(); alert("Coming Soon!"); } // Alert if empty
+                    if(url === "") a.onclick = (e) => { e.preventDefault(); alert("Link coming soon!"); }
                 } else {
                     a.className = 'dl-btn btn-download';
                     a.innerHTML = `<i class="fa-solid fa-download"></i> ${key}`;
                 }
-                
                 linkBox.appendChild(a);
             }
 
             detailsPage.style.display = 'block';
             document.body.style.overflow = 'hidden';
-            
-            // Back button support for mobile
             window.history.pushState({ modalOpen: true }, "", "#details");
         }
 
-        // --- 5. CLOSE DETAILS ---
         function closeDetails() {
             detailsPage.style.display = 'none';
             document.body.style.overflow = 'auto';
             history.back();
         }
 
-        // Handle Back Button
         window.onpopstate = function() {
             detailsPage.style.display = 'none';
             document.body.style.overflow = 'auto';
         };
 
-        // --- 6. CATEGORY FILTER ---
-        function filterCategory(cat, btn) {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMovies(cat);
-        }
-
-        // Search Function
-        function filterMovies() {
-            const activeBtn = document.querySelector('.cat-btn.active');
-            // Re-run render with current category context
-            // Note: simple version just resets to 'all' or keeps current list logic
-            renderMovies('all'); 
-        }
-
         // Start App
         renderMovies();
-
     </script>
 </body>
 </html>
